@@ -1,0 +1,129 @@
+---
+title: "Blog Post 3"
+author: "Ben LeStage"
+date: "2024-01-31"
+categories: [news, code, analysis]
+---
+
+```{r warning = FALSE, message = FALSE}
+library(tidyverse)
+
+nyt_titles <- readr::read_tsv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-10/nyt_titles.tsv')
+nyt_full <- readr::read_tsv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-10/nyt_full.tsv')
+
+
+```
+
+
+## Introduction
+
+For this post, I will be using the NYT best sellers data set which consists of 7,431 books that have been on the NYT best sellers list. I retrieved this data from Tidy Tuesday week 19 2022. 
+
+https://github.com/rfordatascience/tidytuesday/blob/master/data/2022/2022-05-10/readme.md
+
+My primary interest with this data is to fit and visualize a model to predict the number of weeks a book was on the list based on what rank the book debuted at. I will also fit and visualize a model to predict the number of weeks a book was on the list based on the book's best rank. I will compare these models.
+
+
+## Primary Visualizations
+```{r}
+library(broom)
+library(modelr)
+
+mod_rank <- lm(total_weeks ~ debut_rank, data = nyt_titles)
+mod_rank |> tidy()
+
+grid <- nyt_titles |>
+  data_grid(
+    debut_rank = seq_range(debut_rank, n = 6)
+  )
+
+aug_rank <- augment(mod_rank, newdata = grid, 
+                    interval = "confidence")
+
+```
+
+
+```{r}
+ggplot(data = nyt_titles, aes(x = debut_rank, y = total_weeks)) +
+  geom_point() +
+  geom_line(data = aug_rank, aes(x = debut_rank, y = .fitted), 
+            colour = "blue", linewidth = 1.2)
+```
+
+Based on this model and visualization, it appears as though debut rank is not a strong predictor to see how long a book will remain on the best sellers list. There is a slightly positive relationship, meaning that the lower a book debuted on the list, the more weeks it is likely to remain on the list. This is somewhat surprising given one might expect that a higher debuting book to remain on the list for longer. However, this correlation is not very strong at all and most likely means there is no real relationship between debut rank and number of weeks on the list.
+
+```{r}
+mod_rank_2 <- lm(total_weeks ~ best_rank, data = nyt_titles)
+mod_rank_2 |> tidy()
+
+grid <- nyt_titles |>
+  data_grid(
+    best_rank = seq_range(best_rank, n = 6)
+  )
+
+aug_rank <- augment(mod_rank_2, newdata = grid,
+                    interval = "confidence")
+
+
+ggplot(data = nyt_titles, aes(x = best_rank, y = total_weeks)) +
+  geom_point() +
+  geom_line(data = aug_rank, aes(x = best_rank, y = .fitted),
+            colour = "blue", linewidth = 1.2)
+```
+
+
+The relationship between these two variables seems to be far more visible based on this plot. There is a clear negative relationship between the best rank a book received and the number of weeks the book was on the list. This relationship tends to make sense, as a book that spent more time on the list would have more of an opportunity to receive a higher rank. This relationship is much stronger than that between debut rank and total weeks on the list. 
+
+
+### Conclusion and Wrap up
+
+I do not feel as though there are flaws in how I analyzed this data, I followed the steps for visualizing a model that we went over in class. However, I feel that if there had been more variables, such as the books genre I would have been able to visualize a more complex model. Had there been a categorical variable such as genre I would have been able to compare the relationships between genres, utilizing different colours to show the difference in the relationships between genres.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
