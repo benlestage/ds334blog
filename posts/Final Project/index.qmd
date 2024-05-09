@@ -1,0 +1,199 @@
+---
+title: "Final Project"
+author: "Ben LeStage"
+date: "2024-05-9"
+categories: [news, code, analysis]
+---
+
+```{r warning=FALSE, message=FALSE}
+library(tidyverse)
+library(readr)
+library(plotly)
+SLU_Hockey <- read_csv("Data/FinalProject2.csv")
+
+
+SLU_Hockey <- SLU_Hockey |> rename(games = Games)
+```
+
+
+
+# Introduction
+
+  Despite having a losing record for the past 4 years, the St. Lawrence University Men's Ice Hockey Team has made the ECAC Tournament all four years and has made it past the first round in three of the four seasons. This success in the tournament comes despite lackluster individual statistics from the team as a whole. 
+  
+How is this success possible despite losing records and unspectacular individual statistics?
+  
+  This is the question of interest that has guided this project and that I will attempt to answer using visualizations of individual statistics. The data comes from the St. Lawrence University Men's Hockey statistics website. While the data is scrapeable, there are double headings that made it difficult to tidy and work with the data set. Because of this, I transferred the data from the website into my own spreadsheet, choosing the variables that I would be interested in. 
+  
+  The variables I selected are as follows:
+  
+Universal Variables
+  Number - number worn by the player
+  Player - name of player
+  Position - position of player (F, D, G)
+  
+Variables for Forwards and Defensemen
+  Games - number of games played in that particular season
+  Goals - number of goals scored in that particular season
+  Assists - number of assists that season
+  Points - sum of goals and assists that season
+  Shots - number of shots on goal that season
+  Shooting% - percentage of shots that scored that season
+  PlusMinus - spread of how many goals for the player was on the ice for versus goals against (positive value means player was on the ice for more goals for than against)
+  PPGoals - number of power play goals that season
+  GameWinners - number of game-winning-goals that season
+  otGoals - number of Overtime Goals that season
+  Penalties - number of penalties that season
+  PIM - number of penalty minutes that season
+  Blocks - number of blocked shots that season
+  
+Variables for Goaltenders
+  Goals Against - number of goals scored against that season (goalies only)
+  Goals Against Average - average goals against per game (goalies only)
+  Saves - total number of saves that season
+  Save% - percentage of shots saved that season
+  
+Team Variables
+  Year - Season (start/end yer for example: 2021-2022 is the season that started in  Fall 2021 and ended in Spring 2022)
+  Wins - number of team wins that season
+  Losses - number of team losses that season
+  Ties - number of team ties that season
+  ECAC Elimination - which round of the ECAC tournament was St. Lawrence eliminated in (if Tournament was won, coded as "won")
+
+Along with my primary question of interest, I will also explore other relationships in the data that also might be able to explain the teams' record. This might include examining the relationship between position and points scored as well as the number of powerplay goals per game. These statistics and relationships might also give some explanation as to why the team found success despite having a losing record. Defensive statistics such as blocks, and looking at the individual plus/minus of players per game could ease some pressure on the goaltenders. While it is clear that the St. Lawrence team typically does not score many goals, their statistics in other realms including  number of penalites and their success on the penalty kill might also help to explain their success in the ECAC tournament despite their lack of regular season success.
+
+
+# Important Visualizations
+
+The 2020-2021 season is particularly interesting to look at in this project, as the St. Lawrence team won the ECAC tournament this year. 
+
+```{r}
+SLU_Hockey |> distinct(year, wins, losses, ties, `ECAC Elimination`) |> arrange(year)
+```
+ 
+This table output demonstrates the season statistics for the team as a whole. As demonstrated in 2020-2021, the team won six games, lost 8 and tied 3, and yet still won the ECAC Tournament.
+
+When one looks deeper into the individual statistics of players, this success in the tournament despite a losing record becomes more surprising. 
+
+```{r}
+Fplot1 <- ggplot(data = SLU_Hockey |> filter(year == "2020-2021") |> filter(position == "F"), 
+       aes(x = games, y = points, label = player)) +
+  geom_point() + 
+  theme_minimal() +
+  labs(title = "Points vs Games Played for Forwards 2020-2021")
+
+ggplotly(Fplot1, tooltip = "label")
+```
+
+This plot demonstrates the number of points (sum of goals and assists) versus the number of games for each forward on the team. As can be seen, Cameron Buhl had the most points, 15 in 18 games. The leading scorer on a hockey team typically averages over 1 point per game, and given the St. Lawrence team did not achieve this, their success becomes more surprising. In my shiny app, the user can also select points per game for defensemen, which would demonstrate that Luc Salem had the most points for defensemen, scoring 10. This places him above all but three of the forwards. This is also not a great sign for a hockey team as the forwards should largely outscore defensemen. 
+
+```{r}
+Fplot2 <- ggplot(data = SLU_Hockey |> filter(year == "2020-2021") |> filter(position == "F"), 
+       aes(x = games, y = plusminus, label = player)) +
+  geom_point() + 
+  theme_minimal() +
+  labs(title = "Plus/Minus vs Games Played for Forwards 2020-2021")
+
+ggplotly(Fplot2, tooltip = "label")
+
+```
+
+This plot further demonstrates some of the struggles of St. Lawrence Hockey in this season. Out of all forwards, St. Lawrence only had five players that had a positive plus/minus on the season. This demonstrates that St. Lawrence was being outscored in many of the games they played. Again this can help to highlight their struggles.
+
+Contrarily, when one selects goalies under position for this season, the results are stellar. 
+```{r}
+Gplot1 <- ggplot(data = SLU_Hockey |> filter(year == "2020-2021") |> filter(position == "G"), 
+       aes(x = games, y = `save%`, label = player)) +
+  geom_point() + 
+  theme_minimal() +
+  labs(title = "Plus/Minus vs Games Played for Forwards 2020-2021")
+
+ggplotly(Gplot1, tooltip = "label")
+```
+
+Demonstrated by this plot is the fact that Emil Zetterquist played almost every single game for the saints this season. When taking into account his save percentage it becomes clear why. Zetterquist saved just under 93% of shots faced this season. To put this in context, for the NHL the average save percentage for goalies is just above 90%. This demonstrates just how well Zetterquist played this season. 
+
+This helps to explain the St. Lawrence men's hockey team's success this season despite having lackluster individual statistics.
+
+# Conclusion
+
+In the future, I would like to do more work on this shiny app. Specifically, I would like to add more years and seasons to the app, so one can really gain an understanding of the ebs and flows of St Lawrence Hockey over the years. Because, the data was difficult to scrape properly, and I was concerned mainly with only certain individual statistics, I had to code the data by hand in excel spreadsheets. This was time consuming and limited the number of years I could work with. Along with this, the data was limited to the available statistics on the St Lawrence Hockey website. While the statistics that they keep are understandable and common satistics to be kept, it might be interesting to have more individual information about the players, such as their handedness or their home state/province/country. This would allow for some interesting comparisons utilizing categorical variables which would allow for more interesting visualizations than just relying on scatterplots. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
